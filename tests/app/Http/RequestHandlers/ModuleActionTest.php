@@ -18,6 +18,7 @@ declare(strict_types=1);
 
 namespace Fisharebest\Webtrees\Http\RequestHandlers;
 
+use Fig\Http\Message\RequestMethodInterface;
 use Fisharebest\Webtrees\GuestUser;
 use Fisharebest\Webtrees\Services\ModuleService;
 use Fisharebest\Webtrees\TestCase;
@@ -41,7 +42,7 @@ class ModuleActionTest extends TestCase
         $user           = new GuestUser();
         $module_service = new ModuleService();
         $handler        = new ModuleAction($module_service, $user);
-        $request        = self::createRequest(self::METHOD_GET, ['route' => 'module', 'ged' => $tree->name()])
+        $request        = self::createRequest(RequestMethodInterface::METHOD_GET, ['route' => 'module', 'ged' => $tree->name()])
             ->withAttribute('module', 'faq')
             ->withAttribute('action', 'Show')
             ->withAttribute('tree', $tree);
@@ -63,7 +64,7 @@ class ModuleActionTest extends TestCase
         $user           = new GuestUser();
         $module_service = new ModuleService();
         $handler        = new ModuleAction($module_service, $user);
-        $request        = self::createRequest(self::METHOD_GET, ['route' => 'module'])
+        $request        = self::createRequest(RequestMethodInterface::METHOD_GET, ['route' => 'module'])
             ->withAttribute('module', 'faq')
             ->withAttribute('action', 'Fish')
         ;
@@ -80,7 +81,7 @@ class ModuleActionTest extends TestCase
         $user           = new GuestUser();
         $module_service = new ModuleService();
         $handler        = new ModuleAction($module_service, $user);
-        $request        = self::createRequest(self::METHOD_GET, ['route' => 'module'])
+        $request        = self::createRequest(RequestMethodInterface::METHOD_GET, ['route' => 'module'])
             ->withAttribute('module', 'fish')
             ->withAttribute('action', 'Show')
         ;
@@ -101,7 +102,7 @@ class ModuleActionTest extends TestCase
         $user           = new GuestUser();
         $module_service = new ModuleService();
         $handler        = new ModuleAction($module_service, $user);
-        $request        = self::createRequest(self::METHOD_GET, ['route' => 'module', 'ged' => $tree->name()])
+        $request        = self::createRequest(RequestMethodInterface::METHOD_GET, ['route' => 'module', 'ged' => $tree->name()])
             ->withAttribute('module', 'faq')
             ->withAttribute('action', 'Admin')
         ;

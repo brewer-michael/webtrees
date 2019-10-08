@@ -56,7 +56,7 @@ use const UPLOAD_ERR_OK;
 /**
  * Base class for unit tests
  */
-class TestCase extends \PHPUnit\Framework\TestCase implements StatusCodeInterface, RequestMethodInterface
+class TestCase extends \PHPUnit\Framework\TestCase implements StatusCodeInterface
 {
     /** @var object */
     public static $mock_functions;
@@ -137,7 +137,7 @@ class TestCase extends \PHPUnit\Framework\TestCase implements StatusCodeInterfac
      *
      * @return ServerRequestInterface
      */
-    protected static function createRequest(string $method = self::METHOD_GET, array $query = [], array $params = [], array $files = []): ServerRequestInterface
+    protected static function createRequest(string $method = RequestMethodInterface::METHOD_GET, array $query = [], array $params = [], array $files = []): ServerRequestInterface
     {
         /** @var ServerRequestFactoryInterface */
         $server_request_factory = app(ServerRequestFactoryInterface::class);

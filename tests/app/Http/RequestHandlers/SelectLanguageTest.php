@@ -34,7 +34,7 @@ class SelectLanguageTest extends TestCase
     {
         $user     = new GuestUser();
         $handler  = new SelectLanguage($user);
-        $request  = self::createRequest(self::METHOD_POST, [], ['language' => 'fr']);
+        $request  = self::createRequest(RequestMethodInterface::METHOD_POST, [], ['language' => 'fr']);
         $response = $handler->handle($request);
 
         self::assertSame(self::STATUS_NO_CONTENT, $response->getStatusCode());
@@ -48,7 +48,7 @@ class SelectLanguageTest extends TestCase
         $user_service = new UserService();
         $user         = $user_service->create('user', 'real', 'email', 'pass');
         $handler      = new SelectLanguage($user);
-        $request      = self::createRequest(self::METHOD_POST, [], ['language' => 'fr']);
+        $request      = self::createRequest(RequestMethodInterface::METHOD_POST, [], ['language' => 'fr']);
         $response     = $handler->handle($request);
 
         self::assertSame(self::STATUS_NO_CONTENT, $response->getStatusCode());

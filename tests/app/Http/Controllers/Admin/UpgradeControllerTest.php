@@ -19,6 +19,7 @@ declare(strict_types=1);
 namespace Fisharebest\Webtrees\Http\Controllers\Admin;
 
 use Exception;
+use Fig\Http\Message\RequestMethodInterface;
 use Fisharebest\Webtrees\Auth;
 use Fisharebest\Webtrees\Services\TimeoutService;
 use Fisharebest\Webtrees\Services\UpgradeService;
@@ -48,7 +49,7 @@ class UpgradeControllerTest extends TestCase
             new UpgradeService(new TimeoutService())
         );
 
-        $request  = self::createRequest(self::METHOD_GET, ['route' => 'wizard']);
+        $request  = self::createRequest(RequestMethodInterface::METHOD_GET, ['route' => 'wizard']);
         $response = $controller->wizard($request);
 
         $this->assertSame(self::STATUS_OK, $response->getStatusCode());
@@ -66,7 +67,7 @@ class UpgradeControllerTest extends TestCase
             new UpgradeService(new TimeoutService())
         );
 
-        $request  = self::createRequest(self::METHOD_GET, ['route' => 'wizard', 'continue' => '1']);
+        $request  = self::createRequest(RequestMethodInterface::METHOD_GET, ['route' => 'wizard', 'continue' => '1']);
         $response = $controller->wizard($request);
 
         $this->assertSame(self::STATUS_OK, $response->getStatusCode());
@@ -83,7 +84,7 @@ class UpgradeControllerTest extends TestCase
             new UpgradeService(new TimeoutService())
         );
 
-        $request = self::createRequest(self::METHOD_POST, ['route' => 'wizard', 'step' => 'Invalid']);
+        $request = self::createRequest(RequestMethodInterface::METHOD_POST, ['route' => 'wizard', 'step' => 'Invalid']);
         $controller->step($request);
     }
 
@@ -99,7 +100,7 @@ class UpgradeControllerTest extends TestCase
             $mock_upgrade_service
         );
 
-        $request  = self::createRequest(self::METHOD_POST, ['route' => 'wizard', 'step' => 'Check']);
+        $request  = self::createRequest(RequestMethodInterface::METHOD_POST, ['route' => 'wizard', 'step' => 'Check']);
         $response = $controller->step($request);
 
         $this->assertSame(self::STATUS_OK, $response->getStatusCode());
@@ -118,7 +119,7 @@ class UpgradeControllerTest extends TestCase
             $mock_upgrade_service
         );
 
-        $request = self::createRequest(self::METHOD_POST, ['route' => 'wizard', 'step' => 'Check']);
+        $request = self::createRequest(RequestMethodInterface::METHOD_POST, ['route' => 'wizard', 'step' => 'Check']);
         $controller->step($request);
     }
 
@@ -135,7 +136,7 @@ class UpgradeControllerTest extends TestCase
             $mock_upgrade_service
         );
 
-        $request = self::createRequest(self::METHOD_POST, ['route' => 'wizard', 'step' => 'Check']);
+        $request = self::createRequest(RequestMethodInterface::METHOD_POST, ['route' => 'wizard', 'step' => 'Check']);
         $controller->step($request);
     }
 
@@ -149,7 +150,7 @@ class UpgradeControllerTest extends TestCase
             new UpgradeService(new TimeoutService())
         );
 
-        $request  = self::createRequest(self::METHOD_POST, ['route' => 'wizard', 'step' => 'Prepare']);
+        $request  = self::createRequest(RequestMethodInterface::METHOD_POST, ['route' => 'wizard', 'step' => 'Prepare']);
         $response = $controller->step($request);
 
         $this->assertSame(self::STATUS_OK, $response->getStatusCode());
@@ -165,7 +166,7 @@ class UpgradeControllerTest extends TestCase
             new UpgradeService(new TimeoutService())
         );
 
-        $request  = self::createRequest(self::METHOD_POST, ['route' => 'wizard', 'step' => 'Pending']);
+        $request  = self::createRequest(RequestMethodInterface::METHOD_POST, ['route' => 'wizard', 'step' => 'Pending']);
         $response = $controller->step($request);
 
         $this->assertSame(self::STATUS_OK, $response->getStatusCode());
@@ -187,7 +188,7 @@ class UpgradeControllerTest extends TestCase
             new UpgradeService(new TimeoutService())
         );
 
-        $request = self::createRequest(self::METHOD_POST, ['route' => 'wizard', 'step' => 'Pending']);
+        $request = self::createRequest(RequestMethodInterface::METHOD_POST, ['route' => 'wizard', 'step' => 'Pending']);
         $controller->step($request);
     }
 
@@ -202,7 +203,7 @@ class UpgradeControllerTest extends TestCase
             new UpgradeService(new TimeoutService())
         );
 
-        $request  = self::createRequest(self::METHOD_POST, ['route' => 'wizard', 'step' => 'Export'])
+        $request  = self::createRequest(RequestMethodInterface::METHOD_POST, ['route' => 'wizard', 'step' => 'Export'])
             ->withAttribute('tree', $tree);
         $response = $controller->step($request);
 
@@ -227,7 +228,7 @@ class UpgradeControllerTest extends TestCase
             $mock_upgrade_service
         );
 
-        $request = self::createRequest(self::METHOD_POST, ['route' => 'wizard', 'step' => 'Download']);
+        $request = self::createRequest(RequestMethodInterface::METHOD_POST, ['route' => 'wizard', 'step' => 'Download']);
         $controller->step($request);
     }
 
@@ -243,7 +244,7 @@ class UpgradeControllerTest extends TestCase
             $mock_upgrade_service
         );
 
-        $request  = self::createRequest(self::METHOD_POST, ['route' => 'wizard', 'step' => 'Download']);
+        $request  = self::createRequest(RequestMethodInterface::METHOD_POST, ['route' => 'wizard', 'step' => 'Download']);
         $response = $controller->step($request);
 
         $this->assertSame(self::STATUS_OK, $response->getStatusCode());
@@ -261,7 +262,7 @@ class UpgradeControllerTest extends TestCase
             $mock_upgrade_service
         );
 
-        $request  = self::createRequest(self::METHOD_POST, ['route' => 'wizard', 'step' => 'Unzip']);
+        $request  = self::createRequest(RequestMethodInterface::METHOD_POST, ['route' => 'wizard', 'step' => 'Unzip']);
         $response = $controller->step($request);
 
         $this->assertSame(self::STATUS_OK, $response->getStatusCode());
@@ -277,7 +278,7 @@ class UpgradeControllerTest extends TestCase
             new UpgradeService(new TimeoutService())
         );
 
-        $request  = self::createRequest(self::METHOD_POST, ['route' => 'wizard', 'step' => 'Copy']);
+        $request  = self::createRequest(RequestMethodInterface::METHOD_POST, ['route' => 'wizard', 'step' => 'Copy']);
         $response = $controller->step($request);
 
         $this->assertSame(self::STATUS_OK, $response->getStatusCode());
@@ -294,7 +295,7 @@ class UpgradeControllerTest extends TestCase
             $mock_upgrade_service
         );
 
-        $request  = self::createRequest(self::METHOD_POST, ['route' => 'wizard', 'step' => 'Cleanup']);
+        $request  = self::createRequest(RequestMethodInterface::METHOD_POST, ['route' => 'wizard', 'step' => 'Cleanup']);
         $response = $controller->step($request);
 
         $this->assertSame(self::STATUS_OK, $response->getStatusCode());

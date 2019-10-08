@@ -35,7 +35,7 @@ class SelectThemeTest extends TestCase
         $user = $this->createMock(GuestUser::class);
         $user->expects($this->once())->method('setPreference')->with('theme', 'FOO');
 
-        $request = self::createRequest(self::METHOD_POST, [], ['theme' => 'FOO'])
+        $request = self::createRequest(RequestMethodInterface::METHOD_POST, [], ['theme' => 'FOO'])
             ->withAttribute('user', $user);
 
         $handler  = new SelectTheme();
@@ -52,7 +52,7 @@ class SelectThemeTest extends TestCase
         $user = $this->createMock(User::class);
         $user->expects($this->once())->method('setPreference')->with('theme', 'FOO');
 
-        $request = self::createRequest(self::METHOD_POST, [], ['theme' => 'FOO'])
+        $request = self::createRequest(RequestMethodInterface::METHOD_POST, [], ['theme' => 'FOO'])
             ->withAttribute('user', $user);
 
         $handler  = new SelectTheme();

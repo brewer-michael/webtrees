@@ -18,6 +18,7 @@ declare(strict_types=1);
 
 namespace Fisharebest\Webtrees\Module;
 
+use Fisharebest\Webtrees\Http\RequestHandlers\ModuleAction;
 use function array_key_exists;
 
 use Fisharebest\Webtrees\Auth;
@@ -136,6 +137,7 @@ class BatchUpdateModule extends AbstractModule implements ModuleConfigInterface
             'curr_xref'   => $curr_xref,
             'next_xref'   => $next_xref,
             'plugin'      => $plugin,
+            'module'      => $this->name(),
             'record'      => GedcomRecord::getInstance($curr_xref, $tree),
             'prev_xref'   => $prev_xref,
             'title'       => I18N::translate('Batch update'),

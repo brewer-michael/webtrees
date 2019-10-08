@@ -18,6 +18,7 @@ declare(strict_types=1);
 
 namespace Fisharebest\Webtrees\Http\RequestHandlers;
 
+use Fig\Http\Message\RequestMethodInterface;
 use Fisharebest\Webtrees\Auth;
 use Fisharebest\Webtrees\Services\UserService;
 use Fisharebest\Webtrees\Session;
@@ -43,7 +44,7 @@ class MasqueradeAsUserTest extends TestCase
         $user_service = $this->createMock(UserService::class);
         $user_service->expects($this->once())->method('find')->willReturn($user2);
 
-        $request = self::createRequest(self::METHOD_POST, [], ['user_id' => $user2->id()])
+        $request = self::createRequest(RequestMethodInterface::METHOD_POST, [], ['user_id' => $user2->id()])
             ->withAttribute('user', $user1);
 
         $handler  = new MasqueradeAsUser($user_service);
@@ -65,7 +66,7 @@ class MasqueradeAsUserTest extends TestCase
         $user_service = $this->createMock(UserService::class);
         $user_service->expects($this->once())->method('find')->willReturn($user);
 
-        $request = self::createRequest(self::METHOD_POST, [], ['user_id' => $user->id()])
+        $request = self::createRequest(RequestMethodInterface::METHOD_POST, [], ['user_id' => $user->id()])
             ->withAttribute('user', $user);
 
         $handler  = new MasqueradeAsUser($user_service);
@@ -88,7 +89,7 @@ class MasqueradeAsUserTest extends TestCase
         $user_service = $this->createMock(UserService::class);
         $user_service->expects($this->once())->method('find')->willReturn(null);
 
-        $request = self::createRequest(self::METHOD_POST, [], ['user_id' => 2])
+        $request = self::createRequest(RequestMethodInterface::METHOD_POST, [], ['user_id' => 2])
             ->withAttribute('user', $user);
 
         $handler = new MasqueradeAsUser($user_service);

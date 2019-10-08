@@ -18,6 +18,7 @@ declare(strict_types=1);
 
 namespace Fisharebest\Webtrees\Http\Controllers\Admin;
 
+use Fig\Http\Message\RequestMethodInterface;
 use Fisharebest\Webtrees\Services\ModuleService;
 use Fisharebest\Webtrees\TestCase;
 use Fisharebest\Webtrees\Tree;
@@ -37,7 +38,7 @@ class ModuleControllerTest extends TestCase
     public function testList(): void
     {
         $controller = new ModuleController(new ModuleService());
-        $request    = self::createRequest(self::METHOD_GET, ['route' => 'modules']);
+        $request    = self::createRequest(RequestMethodInterface::METHOD_GET, ['route' => 'modules']);
         $response   = $controller->list($request);
 
         $this->assertSame(self::STATUS_OK, $response->getStatusCode());
@@ -49,7 +50,7 @@ class ModuleControllerTest extends TestCase
     public function testListAnalytics(): void
     {
         $controller = new ModuleController(new ModuleService());
-        $request    = self::createRequest(self::METHOD_GET, ['route' => 'analytics']);
+        $request    = self::createRequest(RequestMethodInterface::METHOD_GET, ['route' => 'analytics']);
         $response   = $controller->listAnalytics($request);
 
         $this->assertSame(self::STATUS_OK, $response->getStatusCode());
@@ -61,7 +62,7 @@ class ModuleControllerTest extends TestCase
     public function testListBlocks(): void
     {
         $controller = new ModuleController(new ModuleService());
-        $request    = self::createRequest(self::METHOD_GET, ['route' => 'blocks']);
+        $request    = self::createRequest(RequestMethodInterface::METHOD_GET, ['route' => 'blocks']);
         $response   = $controller->listBlocks($request);
 
         $this->assertSame(self::STATUS_OK, $response->getStatusCode());
@@ -73,7 +74,7 @@ class ModuleControllerTest extends TestCase
     public function testListCharts(): void
     {
         $controller = new ModuleController(new ModuleService());
-        $request    = self::createRequest(self::METHOD_GET, ['route' => 'charts']);
+        $request    = self::createRequest(RequestMethodInterface::METHOD_GET, ['route' => 'charts']);
         $response   = $controller->listCharts($request);
 
         $this->assertSame(self::STATUS_OK, $response->getStatusCode());
@@ -85,7 +86,7 @@ class ModuleControllerTest extends TestCase
     public function testListFooters(): void
     {
         $controller = new ModuleController(new ModuleService());
-        $request    = self::createRequest(self::METHOD_GET, ['route' => 'footers']);
+        $request    = self::createRequest(RequestMethodInterface::METHOD_GET, ['route' => 'footers']);
         $response   = $controller->listFooters($request);
 
         $this->assertSame(self::STATUS_OK, $response->getStatusCode());
@@ -97,7 +98,7 @@ class ModuleControllerTest extends TestCase
     public function testListHistory(): void
     {
         $controller = new ModuleController(new ModuleService());
-        $request    = self::createRequest(self::METHOD_GET, ['route' => 'history']);
+        $request    = self::createRequest(RequestMethodInterface::METHOD_GET, ['route' => 'history']);
         $response   = $controller->listHistory($request);
 
         $this->assertSame(self::STATUS_OK, $response->getStatusCode());
@@ -109,7 +110,7 @@ class ModuleControllerTest extends TestCase
     public function testListLanguages(): void
     {
         $controller = new ModuleController(new ModuleService());
-        $request    = self::createRequest(self::METHOD_GET, ['route' => 'languages']);
+        $request    = self::createRequest(RequestMethodInterface::METHOD_GET, ['route' => 'languages']);
         $response   = $controller->listLanguages($request);
 
         $this->assertSame(self::STATUS_OK, $response->getStatusCode());
@@ -121,7 +122,7 @@ class ModuleControllerTest extends TestCase
     public function testListMenus(): void
     {
         $controller = new ModuleController(new ModuleService());
-        $request    = self::createRequest(self::METHOD_GET, ['route' => 'menus']);
+        $request    = self::createRequest(RequestMethodInterface::METHOD_GET, ['route' => 'menus']);
         $response   = $controller->listMenus($request);
 
         $this->assertSame(self::STATUS_OK, $response->getStatusCode());
@@ -133,7 +134,7 @@ class ModuleControllerTest extends TestCase
     public function testListReports(): void
     {
         $controller = new ModuleController(new ModuleService());
-        $request    = self::createRequest(self::METHOD_GET, ['route' => 'reports']);
+        $request    = self::createRequest(RequestMethodInterface::METHOD_GET, ['route' => 'reports']);
         $response   = $controller->listReports($request);
 
         $this->assertSame(self::STATUS_OK, $response->getStatusCode());
@@ -145,7 +146,7 @@ class ModuleControllerTest extends TestCase
     public function testListSidebars(): void
     {
         $controller = new ModuleController(new ModuleService());
-        $request    = self::createRequest(self::METHOD_GET, ['route' => 'sidebars']);
+        $request    = self::createRequest(RequestMethodInterface::METHOD_GET, ['route' => 'sidebars']);
         $response   = $controller->listSidebars($request);
 
         $this->assertSame(self::STATUS_OK, $response->getStatusCode());
@@ -157,7 +158,7 @@ class ModuleControllerTest extends TestCase
     public function testListTabs(): void
     {
         $controller = new ModuleController(new ModuleService());
-        $request    = self::createRequest(self::METHOD_GET, ['route' => 'tabs']);
+        $request    = self::createRequest(RequestMethodInterface::METHOD_GET, ['route' => 'tabs']);
         $response   = $controller->listTabs($request);
 
         $this->assertSame(self::STATUS_OK, $response->getStatusCode());
@@ -169,7 +170,7 @@ class ModuleControllerTest extends TestCase
     public function testListThemes(): void
     {
         $controller = new ModuleController(new ModuleService());
-        $request    = self::createRequest(self::METHOD_GET, ['route' => 'themes']);
+        $request    = self::createRequest(RequestMethodInterface::METHOD_GET, ['route' => 'themes']);
         $response   = $controller->listThemes($request);
 
         $this->assertSame(self::STATUS_OK, $response->getStatusCode());
@@ -182,7 +183,7 @@ class ModuleControllerTest extends TestCase
     {
         Tree::create('name', 'title');
         $controller = new ModuleController(new ModuleService());
-        $request    = self::createRequest(self::METHOD_POST, ['route' => 'modules']);
+        $request    = self::createRequest(RequestMethodInterface::METHOD_POST, ['route' => 'modules']);
         $response   = $controller->update($request);
 
         $this->assertSame(self::STATUS_FOUND, $response->getStatusCode());
@@ -195,7 +196,7 @@ class ModuleControllerTest extends TestCase
     {
         Tree::create('name', 'title');
         $controller = new ModuleController(new ModuleService());
-        $request    = self::createRequest(self::METHOD_POST, ['route' => 'analytics']);
+        $request    = self::createRequest(RequestMethodInterface::METHOD_POST, ['route' => 'analytics']);
         $response   = $controller->updateAnalytics($request);
 
         $this->assertSame(self::STATUS_FOUND, $response->getStatusCode());
@@ -208,7 +209,7 @@ class ModuleControllerTest extends TestCase
     {
         Tree::create('name', 'title');
         $controller = new ModuleController(new ModuleService());
-        $request    = self::createRequest(self::METHOD_POST, ['route' => 'blocks']);
+        $request    = self::createRequest(RequestMethodInterface::METHOD_POST, ['route' => 'blocks']);
         $response   = $controller->updateBlocks($request);
 
         $this->assertSame(self::STATUS_FOUND, $response->getStatusCode());
@@ -221,7 +222,7 @@ class ModuleControllerTest extends TestCase
     {
         Tree::create('name', 'title');
         $controller = new ModuleController(new ModuleService());
-        $request    = self::createRequest(self::METHOD_POST, ['route' => 'charts']);
+        $request    = self::createRequest(RequestMethodInterface::METHOD_POST, ['route' => 'charts']);
         $response   = $controller->updateCharts($request);
 
         $this->assertSame(self::STATUS_FOUND, $response->getStatusCode());
@@ -234,7 +235,7 @@ class ModuleControllerTest extends TestCase
     {
         Tree::create('name', 'title');
         $controller = new ModuleController(new ModuleService());
-        $request    = self::createRequest(self::METHOD_POST, ['route' => 'footers']);
+        $request    = self::createRequest(RequestMethodInterface::METHOD_POST, ['route' => 'footers']);
         $response   = $controller->updateFooters($request);
 
         $this->assertSame(self::STATUS_FOUND, $response->getStatusCode());
@@ -247,7 +248,7 @@ class ModuleControllerTest extends TestCase
     {
         Tree::create('name', 'title');
         $controller = new ModuleController(new ModuleService());
-        $request    = self::createRequest(self::METHOD_POST, ['route' => 'history']);
+        $request    = self::createRequest(RequestMethodInterface::METHOD_POST, ['route' => 'history']);
         $response   = $controller->updateHistory($request);
 
         $this->assertSame(self::STATUS_FOUND, $response->getStatusCode());
@@ -260,7 +261,7 @@ class ModuleControllerTest extends TestCase
     {
         Tree::create('name', 'title');
         $controller = new ModuleController(new ModuleService());
-        $request    = self::createRequest(self::METHOD_POST, ['route' => 'languages']);
+        $request    = self::createRequest(RequestMethodInterface::METHOD_POST, ['route' => 'languages']);
         $response   = $controller->updateLanguages($request);
 
         $this->assertSame(self::STATUS_FOUND, $response->getStatusCode());
@@ -273,7 +274,7 @@ class ModuleControllerTest extends TestCase
     {
         Tree::create('name', 'title');
         $controller = new ModuleController(new ModuleService());
-        $request    = self::createRequest(self::METHOD_POST, ['route' => 'menus']);
+        $request    = self::createRequest(RequestMethodInterface::METHOD_POST, ['route' => 'menus']);
         $response   = $controller->updateMenus($request);
 
         $this->assertSame(self::STATUS_FOUND, $response->getStatusCode());
@@ -286,7 +287,7 @@ class ModuleControllerTest extends TestCase
     {
         Tree::create('name', 'title');
         $controller = new ModuleController(new ModuleService());
-        $request    = self::createRequest(self::METHOD_POST, ['route' => 'reports']);
+        $request    = self::createRequest(RequestMethodInterface::METHOD_POST, ['route' => 'reports']);
         $response   = $controller->updateReports($request);
 
         $this->assertSame(self::STATUS_FOUND, $response->getStatusCode());
@@ -299,7 +300,7 @@ class ModuleControllerTest extends TestCase
     {
         Tree::create('name', 'title');
         $controller = new ModuleController(new ModuleService());
-        $request    = self::createRequest(self::METHOD_POST, ['route' => 'sidebars']);
+        $request    = self::createRequest(RequestMethodInterface::METHOD_POST, ['route' => 'sidebars']);
         $response   = $controller->updateSidebars($request);
 
         $this->assertSame(self::STATUS_FOUND, $response->getStatusCode());
@@ -312,7 +313,7 @@ class ModuleControllerTest extends TestCase
     {
         Tree::create('name', 'title');
         $controller = new ModuleController(new ModuleService());
-        $request    = self::createRequest(self::METHOD_POST, ['route' => 'tabs']);
+        $request    = self::createRequest(RequestMethodInterface::METHOD_POST, ['route' => 'tabs']);
         $response   = $controller->updateTabs($request);
 
         $this->assertSame(self::STATUS_FOUND, $response->getStatusCode());
@@ -325,7 +326,7 @@ class ModuleControllerTest extends TestCase
     {
         Tree::create('name', 'title');
         $controller = new ModuleController(new ModuleService());
-        $request    = self::createRequest(self::METHOD_POST, ['route' => 'themes']);
+        $request    = self::createRequest(RequestMethodInterface::METHOD_POST, ['route' => 'themes']);
         $response   = $controller->updateThemes($request);
 
         $this->assertSame(self::STATUS_FOUND, $response->getStatusCode());
@@ -337,7 +338,7 @@ class ModuleControllerTest extends TestCase
     public function testDeleteModuleSettings(): void
     {
         $controller = new ModuleController(new ModuleService());
-        $request    = self::createRequest(self::METHOD_POST, ['route' => 'delete-module-settings'], ['module_name' => 'foo']);
+        $request    = self::createRequest(RequestMethodInterface::METHOD_POST, ['route' => 'delete-module-settings'], ['module_name' => 'foo']);
         $response   = $controller->deleteModuleSettings($request);
 
         $this->assertSame(self::STATUS_FOUND, $response->getStatusCode());

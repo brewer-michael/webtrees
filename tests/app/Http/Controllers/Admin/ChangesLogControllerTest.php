@@ -18,11 +18,13 @@ declare(strict_types=1);
 
 namespace Fisharebest\Webtrees\Http\Controllers\Admin;
 
+use Fig\Http\Message\RequestMethodInterface;
+use Fisharebest\Algorithm\MyersDiff;
 use Fisharebest\Webtrees\Auth;
+use Fisharebest\Webtrees\Services\DatatablesService;
 use Fisharebest\Webtrees\Services\UserService;
 use Fisharebest\Webtrees\TestCase;
 use Fisharebest\Webtrees\Tree;
-
 use function app;
 
 /**
@@ -41,8 +43,12 @@ class ChangesLogControllerTest extends TestCase
     {
         app()->instance(Tree::class, Tree::create('', ''));
 
-        $request  = self::createRequest(self::METHOD_GET, ['route' => 'admin-changes-log']);
-        $response = app(ChangesLogController::class)->changesLog($request);
+        $datatables_service = new DatatablesService();
+        $myers_diff         = new MyersDiff();
+        $user_service       = new UserService();
+        $controller         = new ChangesLogController($datatables_service, $myers_diff, $user_service);
+        $request            = self::createRequest();
+        $response           = $controller->changesLog($request);
 
         $this->assertSame(self::STATUS_OK, $response->getStatusCode());
     }
@@ -57,7 +63,11 @@ class ChangesLogControllerTest extends TestCase
         Auth::login($user);
         $individual = $tree->createIndividual("0 @@ INDI\n1 NAME Joe Bloggs");
 
-        $request  = self::createRequest(self::METHOD_GET, [
+        $datatables_service = new DatatablesService();
+        $myers_diff         = new MyersDiff();
+        $user_service       = new UserService();
+        $controller         = new ChangesLogController($datatables_service, $myers_diff, $user_service);
+        $request            = self::createRequest(RequestMethodInterface::METHOD_GET, [
             'route'  => 'admin-changes-log-data',
             'search' => 'Joe',
             'from'   => '2000-01-01',
@@ -67,7 +77,7 @@ class ChangesLogControllerTest extends TestCase
             'ged'    => $tree->name(),
             'user'   => $user->userName(),
         ]);
-        $response = app(ChangesLogController::class)->changesLogData($request);
+        $response           = $controller->changesLogData($request);
 
         $this->assertSame(self::STATUS_OK, $response->getStatusCode());
     }
@@ -82,11 +92,12 @@ class ChangesLogControllerTest extends TestCase
         Auth::login($user);
         $tree->createIndividual("0 @@ INDI\n1 NAME Joe Bloggs");
 
-        $request  = self::createRequest(self::METHOD_GET, [
-            'route' => 'admin-changes-log-download',
-            'ged'   => $tree->name(),
-        ]);
-        $response = app(ChangesLogController::class)->changesLogDownload($request);
+        $datatables_service = new DatatablesService();
+        $myers_diff         = new MyersDiff();
+        $user_service       = new UserService();
+        $controller         = new ChangesLogController($datatables_service, $myers_diff, $user_service);
+        $request            = self::createRequest();
+        $response           = $controller->changesLogDownload($request);
 
         $this->assertSame(self::STATUS_OK, $response->getStatusCode());
     }

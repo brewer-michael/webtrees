@@ -40,7 +40,7 @@ use const PHP_EOL;
 /**
  * Middleware to handle and render errors.
  */
-class HandleExceptions implements MiddlewareInterface, RequestMethodInterface, StatusCodeInterface
+class HandleExceptions implements MiddlewareInterface, StatusCodeInterface
 {
     use ViewResponseTrait;
 
@@ -116,7 +116,7 @@ class HandleExceptions implements MiddlewareInterface, RequestMethodInterface, S
         if ($request->getHeaderLine('X-Requested-With') !== '') {
             // If this was a GET request, then we were probably fetching HTML to display, for
             // example a chart or tab.
-            if ($request->getMethod() === self::METHOD_GET) {
+            if ($request->getMethod() === RequestMethodInterface::METHOD_GET) {
                 $status_code = self::STATUS_OK;
             } else {
                 $status_code = self::STATUS_INTERNAL_SERVER_ERROR;

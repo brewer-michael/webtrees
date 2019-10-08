@@ -18,6 +18,7 @@ declare(strict_types=1);
 
 namespace Fisharebest\Webtrees\Http\Controllers\Admin;
 
+use Fig\Http\Message\RequestMethodInterface;
 use Fisharebest\Webtrees\Services\DatatablesService;
 use Fisharebest\Webtrees\TestCase;
 use Fisharebest\Webtrees\Tree;
@@ -37,7 +38,7 @@ class FixLevel0MediaControllerTest extends TestCase
     public function testFixLevel0Media(): void
     {
         $controller = new FixLevel0MediaController(new DatatablesService());
-        $request    = self::createRequest(self::METHOD_GET, ['route' => 'admin-fix-level-0-media']);
+        $request    = self::createRequest(RequestMethodInterface::METHOD_GET, ['route' => 'admin-fix-level-0-media']);
         $response   = $controller->fixLevel0Media($request);
 
         $this->assertSame(self::STATUS_OK, $response->getStatusCode());
@@ -50,7 +51,7 @@ class FixLevel0MediaControllerTest extends TestCase
     {
         $tree       = Tree::create('name', 'title');
         $controller = new FixLevel0MediaController(new DatatablesService());
-        $request    = self::createRequest(self::METHOD_POST, ['route' => 'admin-fix-level-0-media'], [
+        $request    = self::createRequest(RequestMethodInterface::METHOD_POST, ['route' => 'admin-fix-level-0-media'], [
             'tree_id'   => $tree->id(),
             'fact_id'   => '',
             'indi_xref' => '',
@@ -69,7 +70,7 @@ class FixLevel0MediaControllerTest extends TestCase
         $datatables_service = new DatatablesService();
         $tree               = Tree::create('name', 'title');
         $controller         = new FixLevel0MediaController($datatables_service);
-        $request            = self::createRequest(self::METHOD_GET, ['route' => 'admin-fix-level-0-media-data', ['tree_id' => $tree->id()]]);
+        $request            = self::createRequest(RequestMethodInterface::METHOD_GET, ['route' => 'admin-fix-level-0-media-data', ['tree_id' => $tree->id()]]);
         $response           = $controller->fixLevel0MediaData($request);
 
         $this->assertSame(self::STATUS_OK, $response->getStatusCode());

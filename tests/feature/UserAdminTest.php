@@ -18,6 +18,7 @@ declare(strict_types=1);
 
 namespace Fisharebest\Webtrees;
 
+use Fig\Http\Message\RequestMethodInterface;
 use Fisharebest\Webtrees\Http\Controllers\Admin\UsersController;
 use Fisharebest\Webtrees\Services\UserService;
 
@@ -42,7 +43,7 @@ class UserAdminTest extends TestCase
         $user_service->create('UserName', 'RealName', 'user@example.com', 'secret');
 
         $controller = app(UsersController::class);
-        $request    = self::createRequest(self::METHOD_GET, ['length' => '10',])->withAttribute('user', $admin);
+        $request    = self::createRequest(RequestMethodInterface::METHOD_GET, ['length' => '10',])->withAttribute('user', $admin);
         $response   = $controller->data($request);
 
         $this->assertSame(self::STATUS_OK, $response->getStatusCode());

@@ -20,13 +20,13 @@ namespace Fisharebest\Webtrees\Module;
 
 use Fisharebest\Webtrees\Auth;
 use Fisharebest\Webtrees\Date;
+use Fisharebest\Webtrees\Http\RequestHandlers\ModuleAction;
 use Fisharebest\Webtrees\I18N;
 use Fisharebest\Webtrees\Individual;
 use Fisharebest\Webtrees\Statistics;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-
 use function app;
 use function array_key_exists;
 use function array_keys;
@@ -168,8 +168,9 @@ class StatisticsChartModule extends AbstractModule implements ModuleChartInterfa
         ];
 
         return $this->viewResponse('modules/statistics-chart/page', [
-            'tabs'  => $tabs,
-            'title' => $this->title(),
+            'module' => $this->name(),
+            'tabs'   => $tabs,
+            'title'  => $this->title(),
         ]);
     }
 
