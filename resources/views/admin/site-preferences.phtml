@@ -86,6 +86,23 @@ use Fisharebest\Webtrees\Site;
         </div>
     </fieldset>
 
+	<!-- CONTROL_LIVE_SEARCH -->
+	<fieldset>
+		<div class="row">
+			<legend class="col-form-label col-sm-3">
+                <?= /* I18N: A configuration setting */
+                I18N::translate('Enable/Disable Live Search') ?>
+            </legend>
+            <div class="col-sm-9">
+                <?= view('components/radios-inline', ['name' => 'ALLOW_LIVE_SEARCH', 'options' => [I18N::translate('no'), I18N::translate('yes')], 'selected' => (int) Site::getPreference('ALLOW_LIVE_SEARCH')]) ?>
+                <p class="small text-muted">
+                    <?= /* I18N: Description of Live Search */
+                    I18N::translate('Toggle on or off search results appearing as selectable while the search is being typed') ?>
+                </p>
+            </div>
+		</div>
+	</fieldset>
+
     <div class="row form-group">
         <div class="offset-sm-3 col-sm-9">
             <button type="submit" class="btn btn-primary">
