@@ -5,6 +5,7 @@ use Fisharebest\Webtrees\I18N;
 
 ?>
 
+<script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
 <script type="text/javascript">
 $(document).ready(function(){
 	$('.input-group .input-group-sm').on("keyup input", function(){
@@ -12,7 +13,7 @@ $(document).ready(function(){
 		var inputVal = $(this).val();
 		var resultDropdown = $(this).siblings(".result");
         if(inputVal.length){
-            $.get("backend-search.php", {term: inputVal}).done(function(data){
+            $.get("\app\Http\RequestHandlers\SearchGeneralAction.php", {term: inputVal}).done(function(data){
                 // Display the returned data in browser
                 resultDropdown.html(data);
             });
