@@ -20,7 +20,6 @@ declare(strict_types=1);
 namespace Fisharebest\Webtrees\Http\Controllers;
 
 use Exception;
-use Fisharebest\Algorithm\ConnectedComponent;
 use Fisharebest\Webtrees\Auth;
 use Fisharebest\Webtrees\Contracts\UserInterface;
 use Fisharebest\Webtrees\Date;
@@ -28,7 +27,6 @@ use Fisharebest\Webtrees\Family;
 use Fisharebest\Webtrees\FlashMessages;
 use Fisharebest\Webtrees\Functions\Functions;
 use Fisharebest\Webtrees\Gedcom;
-use Fisharebest\Webtrees\GedcomRecord;
 use Fisharebest\Webtrees\GedcomTag;
 use Fisharebest\Webtrees\I18N;
 use Fisharebest\Webtrees\Individual;
@@ -58,6 +56,7 @@ use function app;
 use function array_key_exists;
 use function assert;
 use function fclose;
+use function is_string;
 use function preg_match;
 use function route;
 
@@ -77,9 +76,6 @@ class AdminTreesController extends AbstractBaseController
     /** @var ModuleService */
     private $module_service;
 
-    /** @var FilesystemInterface */
-    private $filesystem;
-
     /** @var TimeoutService */
     private $timeout_service;
 
@@ -92,20 +88,17 @@ class AdminTreesController extends AbstractBaseController
     /**
      * AdminTreesController constructor.
      *
-     * @param FilesystemInterface $filesystem
      * @param ModuleService       $module_service
      * @param TimeoutService      $timeout_service
      * @param TreeService         $tree_service
      * @param UserService         $user_service
      */
     public function __construct(
-        FilesystemInterface $filesystem,
         ModuleService $module_service,
         TimeoutService $timeout_service,
         TreeService $tree_service,
         UserService $user_service
     ) {
-        $this->filesystem      = $filesystem;
         $this->module_service  = $module_service;
         $this->timeout_service = $timeout_service;
         $this->tree_service    = $tree_service;
@@ -352,6 +345,9 @@ class AdminTreesController extends AbstractBaseController
         $tree = $request->getAttribute('tree');
         assert($tree instanceof Tree);
 
+        $data_filesystem = $request->getAttribute('filesystem.data');
+        assert($data_filesystem instanceof FilesystemInterface);
+
         $params             = $request->getParsedBody();
         $source             = $params['source'];
         $keep_media         = (bool) ($params['keep_media'] ?? false);
@@ -381,7 +377,7 @@ class AdminTreesController extends AbstractBaseController
             $basename = basename($params['tree_name'] ?? '');
 
             if ($basename) {
-                $resource = $this->filesystem->readStream($basename);
+                $resource = $data_filesystem->readStream($basename);
                 $stream   = app(StreamFactoryInterface::class)->createStreamFromResource($resource);
                 $tree->importGedcomFile($stream, $basename);
             } else {
@@ -404,14 +400,20 @@ class AdminTreesController extends AbstractBaseController
         $tree = $request->getAttribute('tree');
         assert($tree instanceof Tree);
 
+        $data_filesystem = $request->getAttribute('filesystem.data');
+        assert($data_filesystem instanceof FilesystemInterface);
+
+        $data_folder = $request->getAttribute('filesystem.data.name');
+        assert(is_string($data_folder));
+
         $default_gedcom_file = $tree->getPreference('gedcom_filename');
         $gedcom_media_path   = $tree->getPreference('GEDCOM_MEDIA_PATH');
-        $gedcom_files        = $this->gedcomFiles();
+        $gedcom_files        = $this->gedcomFiles($data_filesystem);
 
         $title = I18N::translate('Import a GEDCOM file') . ' — ' . e($tree->title());
 
         return $this->viewResponse('admin/trees-import', [
-            'data_folder'         => app('filesystem_description'),
+            'data_folder'         => $data_folder,
             'default_gedcom_file' => $default_gedcom_file,
             'gedcom_files'        => $gedcom_files,
             'gedcom_media_path'   => $gedcom_media_path,
@@ -429,8 +431,11 @@ class AdminTreesController extends AbstractBaseController
     {
         $tree = $request->getAttribute('tree');
 
+        $data_filesystem = $request->getAttribute('filesystem.data');
+        assert($data_filesystem instanceof FilesystemInterface);
+
         $multiple_tree_threshold = (int) Site::getPreference('MULTIPLE_TREE_THRESHOLD', self::MULTIPLE_TREE_THRESHOLD);
-        $gedcom_files            = $this->gedcomFiles();
+        $gedcom_files            = $this->gedcomFiles($data_filesystem);
 
         $all_trees = $this->tree_service->all();
 
@@ -702,74 +707,13 @@ class AdminTreesController extends AbstractBaseController
      *
      * @return ResponseInterface
      */
-    public function places(ServerRequestInterface $request): ResponseInterface
-    {
-        $tree = $request->getAttribute('tree');
-        assert($tree instanceof Tree);
-
-        $params  = $request->getQueryParams();
-        $search  = $params['search'] ?? '';
-        $replace = $params['replace'] ?? '';
-
-        if ($search !== '' && $replace !== '') {
-            $changes = $this->changePlacesPreview($tree, $search, $replace);
-        } else {
-            $changes = [];
-        }
-
-        /* I18N: Renumber the records in a family tree */
-        $title = I18N::translate('Update place names') . ' — ' . e($tree->title());
-
-        return $this->viewResponse('admin/trees-places', [
-            'changes' => $changes,
-            'replace' => $replace,
-            'search'  => $search,
-            'title'   => $title,
-        ]);
-    }
-
-    /**
-     * @param ServerRequestInterface $request
-     *
-     * @return ResponseInterface
-     */
-    public function placesAction(ServerRequestInterface $request): ResponseInterface
-    {
-        $tree = $request->getAttribute('tree');
-        assert($tree instanceof Tree);
-
-        $params  = $request->getQueryParams();
-        $search  = $params['search'] ?? '';
-        $replace = $params['replace'] ?? '';
-
-        $changes = $this->changePlacesUpdate($tree, $search, $replace);
-
-        $feedback = I18N::translate('The following places have been changed:') . '<ul>';
-        foreach ($changes as $old_place => $new_place) {
-            $feedback .= '<li>' . e($old_place) . ' &rarr; ' . e($new_place) . '</li>';
-        }
-        $feedback .= '</ul>';
-
-        FlashMessages::addMessage($feedback, 'success');
-
-        $url = route('admin-trees-places', [
-            'tree'    => $tree->name(),
-            'replace' => $replace,
-            'search'  => $search,
-        ]);
-
-        return redirect($url);
-    }
-
-    /**
-     * @param ServerRequestInterface $request
-     *
-     * @return ResponseInterface
-     */
     public function preferences(ServerRequestInterface $request): ResponseInterface
     {
         $tree = $request->getAttribute('tree');
         assert($tree instanceof Tree);
+
+        $data_folder = $request->getAttribute('filesystem.data.name');
+        assert(is_string($data_folder));
 
         $french_calendar_start    = new Date('22 SEP 1792');
         $french_calendar_end      = new Date('31 DEC 1805');
@@ -872,7 +816,7 @@ class AdminTreesController extends AbstractBaseController
             'all_surname_traditions'   => $all_surname_traditions,
             'base_url'                 => $base_url,
             'calendar_formats'         => $calendar_formats,
-            'data_folder'              => app('filesystem_description'),
+            'data_folder'              => $data_folder,
             'formats'                  => $formats,
             'french_calendar_end'      => $french_calendar_end,
             'french_calendar_start'    => $french_calendar_start,
@@ -908,6 +852,7 @@ class AdminTreesController extends AbstractBaseController
 
         return $this->viewResponse('admin/trees-renumber', [
             'title' => $title,
+            'tree'  => $tree,
             'xrefs' => $xrefs,
         ]);
     }
@@ -974,7 +919,6 @@ class AdminTreesController extends AbstractBaseController
         $tree->setPreference('SUBLIST_TRIGGER_I', $request->getParsedBody()['SUBLIST_TRIGGER_I'] ?? '200');
         $tree->setPreference('SURNAME_LIST_STYLE', $request->getParsedBody()['SURNAME_LIST_STYLE'] ?? '');
         $tree->setPreference('SURNAME_TRADITION', $request->getParsedBody()['SURNAME_TRADITION'] ?? '');
-        $tree->setPreference('THEME_DIR', $request->getParsedBody()['THEME_DIR'] ?? '');
         $tree->setPreference('USE_SILHOUETTE', $request->getParsedBody()['USE_SILHOUETTE'] ?? '');
         $tree->setPreference('WEBMASTER_USER_ID', $request->getParsedBody()['WEBMASTER_USER_ID'] ?? '');
         $tree->setPreference('title', $request->getParsedBody()['title'] ?? '');
@@ -1527,16 +1471,19 @@ class AdminTreesController extends AbstractBaseController
      */
     public function synchronize(ServerRequestInterface $request): ResponseInterface
     {
-        $gedcom_files = $this->gedcomFiles();
+        $data_filesystem = $request->getAttribute('filesystem.data');
+        assert($data_filesystem instanceof FilesystemInterface);
+
+        $gedcom_files = $this->gedcomFiles($data_filesystem);
 
         foreach ($gedcom_files as $gedcom_file) {
             // Only import files that have changed
-            $filemtime = (string) $this->filesystem->getTimestamp($gedcom_file);
+            $filemtime = (string) $data_filesystem->getTimestamp($gedcom_file);
 
             $tree = $this->tree_service->all()->get($gedcom_file) ?? $this->tree_service->create($gedcom_file, $gedcom_file);
 
             if ($tree->getPreference('filemtime') !== $filemtime) {
-                $resource = $this->filesystem->readStream($gedcom_file);
+                $resource = $data_filesystem->readStream($gedcom_file);
                 $stream   = app(StreamFactoryInterface::class)->createStreamFromResource($resource);
                 $tree->importGedcomFile($stream, $gedcom_file);
                 $stream->close();
@@ -1554,67 +1501,6 @@ class AdminTreesController extends AbstractBaseController
         }
 
         return redirect(route('manage-trees'));
-    }
-
-    /**
-     * @param ServerRequestInterface $request
-     *
-     * @return ResponseInterface
-     */
-    public function unconnected(ServerRequestInterface $request): ResponseInterface
-    {
-        $tree = $request->getAttribute('tree');
-        assert($tree instanceof Tree);
-
-        $user       = $request->getAttribute('user');
-        $associates = (bool) ($request->getQueryParams()['associates'] ?? false);
-
-        if ($associates) {
-            $links = ['FAMS', 'FAMC', 'ASSO', '_ASSO'];
-        } else {
-            $links = ['FAMS', 'FAMC'];
-        }
-
-        $rows = DB::table('link')
-            ->where('l_file', '=', $tree->id())
-            ->whereIn('l_type', $links)
-            ->select(['l_from', 'l_to'])
-            ->get();
-
-        $graph = [];
-
-        foreach ($rows as $row) {
-            $graph[$row->l_from][$row->l_to] = 1;
-            $graph[$row->l_to][$row->l_from] = 1;
-        }
-
-        $algorithm  = new ConnectedComponent($graph);
-        $components = $algorithm->findConnectedComponents();
-        $root       = $tree->significantIndividual($user);
-        $xref       = $root->xref();
-
-        /** @var Individual[][] */
-        $individual_groups = [];
-
-        foreach ($components as $component) {
-            if (!in_array($xref, $component, true)) {
-                $individuals = [];
-                foreach ($component as $xref) {
-                    $individuals[] = Individual::getInstance($xref, $tree);
-                }
-                // The database query may return pending additions/deletions, which may not exist.
-                $individual_groups[] = array_filter($individuals);
-            }
-        }
-
-        $title = I18N::translate('Find unrelated individuals') . ' — ' . e($tree->title());
-
-        return $this->viewResponse('admin/trees-unconnected', [
-            'associates'        => $associates,
-            'root'              => $root,
-            'individual_groups' => $individual_groups,
-            'title'             => $title,
-        ]);
     }
 
     /**
@@ -1681,89 +1567,6 @@ class AdminTreesController extends AbstractBaseController
     private function formatType($type): string
     {
         return '<b title="' . GedcomTag::getLabel($type) . '">' . $type . '</b>';
-    }
-
-    /**
-     * Find a list of place names that would be updated.
-     *
-     * @param Tree   $tree
-     * @param string $search
-     * @param string $replace
-     *
-     * @return string[]
-     */
-    private function changePlacesPreview(Tree $tree, string $search, string $replace): array
-    {
-        // Fetch the latest GEDCOM for each individual and family
-        $union = DB::table('families')
-            ->where('f_file', '=', $tree->id())
-            ->whereContains('f_gedcom', $search)
-            ->select(['f_gedcom AS gedcom']);
-
-        return DB::table('individuals')
-            ->where('i_file', '=', $tree->id())
-            ->whereContains('i_gedcom', $search)
-            ->select(['i_gedcom AS gedcom'])
-            ->unionAll($union)
-            ->pluck('gedcom')
-            ->mapWithKeys(static function (string $gedcom) use ($search, $replace): array {
-                preg_match_all('/\n2 PLAC ((?:.*, )*)' . preg_quote($search, '/') . '(\n|$)/i', $gedcom, $matches);
-
-                $changes = [];
-                foreach ($matches[1] as $prefix) {
-                    $changes[$prefix . $search] = $prefix . $replace;
-                }
-
-                return $changes;
-            })
-            ->sort()
-            ->all();
-    }
-
-    /**
-     * Find a list of place names that would be updated.
-     *
-     * @param Tree   $tree
-     * @param string $search
-     * @param string $replace
-     *
-     * @return string[]
-     */
-    private function changePlacesUpdate(Tree $tree, string $search, string $replace): array
-    {
-        $individual_changes = DB::table('individuals')
-            ->where('i_file', '=', $tree->id())
-            ->whereContains('i_gedcom', $search)
-            ->select(['individuals.*'])
-            ->get()
-            ->map(Individual::rowMapper());
-
-        $family_changes = DB::table('families')
-            ->where('f_file', '=', $tree->id())
-            ->whereContains('f_gedcom', $search)
-            ->select(['families.*'])
-            ->get()
-            ->map(Family::rowMapper());
-
-        return $individual_changes
-            ->merge($family_changes)
-            ->mapWithKeys(static function (GedcomRecord $record) use ($search, $replace): array {
-                $changes = [];
-
-                foreach ($record->facts() as $fact) {
-                    $old_place = $fact->attribute('PLAC');
-                    if (preg_match('/(^|, )' . preg_quote($search, '/') . '$/i', $old_place)) {
-                        $new_place           = preg_replace('/(^|, )' . preg_quote($search, '/') . '$/i', '$1' . $replace, $old_place);
-                        $changes[$old_place] = $new_place;
-                        $gedcom              = preg_replace('/(\n2 PLAC (?:.*, )*)' . preg_quote($search, '/') . '(\n|$)/i', '$1' . $replace . '$2', $fact->gedcom());
-                        $record->updateFact($fact->id(), $gedcom, false);
-                    }
-                }
-
-                return $changes;
-            })
-            ->sort()
-            ->all();
     }
 
     /**
@@ -1956,17 +1759,19 @@ class AdminTreesController extends AbstractBaseController
     /**
      * A list of GEDCOM files in the data folder.
      *
+     * @param FilesystemInterface $data_filesystem
+     *
      * @return array
      */
-    private function gedcomFiles(): array
+    private function gedcomFiles(FilesystemInterface $data_filesystem): array
     {
-        return Collection::make($this->filesystem->listContents())
-            ->filter(function (array $path): bool {
+        return Collection::make($data_filesystem->listContents())
+            ->filter(static function (array $path) use ($data_filesystem): bool {
                 if ($path['type'] !== 'file') {
                     return false;
                 }
 
-                $stream = $this->filesystem->readStream($path['path']);
+                $stream = $data_filesystem->readStream($path['path']);
                 $header = fread($stream, 64);
                 fclose($stream);
 

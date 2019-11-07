@@ -47,7 +47,6 @@ use Fisharebest\Webtrees\Module\CloudsTheme;
 use Fisharebest\Webtrees\Module\ColorsTheme;
 use Fisharebest\Webtrees\Module\CompactTreeChartModule;
 use Fisharebest\Webtrees\Module\ContactsFooterModule;
-use Fisharebest\Webtrees\Module\CookieWarningModule;
 use Fisharebest\Webtrees\Module\CustomCssJsModule;
 use Fisharebest\Webtrees\Module\DeathReportModule;
 use Fisharebest\Webtrees\Module\DescendancyChartModule;
@@ -174,6 +173,7 @@ use Fisharebest\Webtrees\Module\PedigreeReportModule;
 use Fisharebest\Webtrees\Module\PlaceHierarchyListModule;
 use Fisharebest\Webtrees\Module\PlacesModule;
 use Fisharebest\Webtrees\Module\PoweredByWebtreesModule;
+use Fisharebest\Webtrees\Module\PrivacyPolicy;
 use Fisharebest\Webtrees\Module\RecentChangesModule;
 use Fisharebest\Webtrees\Module\RelatedIndividualsReportModule;
 use Fisharebest\Webtrees\Module\RelationshipsChartModule;
@@ -237,6 +237,25 @@ class ModuleService
         ModuleThemeInterface::class,
     ];
 
+    // Components that have access levels.
+    private const COMPONENTS_WITH_ACCESS = [
+        ModuleBlockInterface::class,
+        ModuleChartInterface::class,
+        ModuleListInterface::class,
+        ModuleMenuInterface::class,
+        ModuleReportInterface::class,
+        ModuleSidebarInterface::class,
+        ModuleTabInterface::class,
+    ];
+
+    // Components that are displayed in a particular order
+    private const COMPONENTS_WITH_SORT = [
+        ModuleFooterInterface::class,
+        ModuleMenuInterface::class,
+        ModuleSidebarInterface::class,
+        ModuleTabInterface::class,
+    ];
+
     // Array keys are module names, and should match module names from earlier versions of webtrees.
     private const CORE_MODULES = [
         'GEDFact_assistant'       => CensusAssistantModule::class,
@@ -261,7 +280,6 @@ class ModuleService
         'colors'                  => ColorsTheme::class,
         'compact-chart'           => CompactTreeChartModule::class,
         'contact-links'           => ContactsFooterModule::class,
-        'cookie-warning'          => CookieWarningModule::class,
         'custom-css-js'           => CustomCssJsModule::class,
         'death_report'            => DeathReportModule::class,
         'descendancy'             => DescendancyModule::class,
@@ -374,6 +392,7 @@ class ModuleService
         'places'                  => PlacesModule::class,
         'places_list'             => PlaceHierarchyListModule::class,
         'powered-by-webtrees'     => PoweredByWebtreesModule::class,
+        'privacy-policy'          => PrivacyPolicy::class,
         'random_media'            => SlideShowModule::class,
         'recent_changes'          => RecentChangesModule::class,
         'relationships_chart'     => RelationshipsChartModule::class,
@@ -789,5 +808,21 @@ class ModuleService
 
             $module->boot();
         }
+    }
+
+    /**
+     * @return string[]
+     */
+    public function componentsWithAccess(): array
+    {
+        return self::COMPONENTS_WITH_ACCESS;
+    }
+
+    /**
+     * @return string[]
+     */
+    public function componentsWithOrder(): array
+    {
+        return self::COMPONENTS_WITH_SORT;
     }
 }

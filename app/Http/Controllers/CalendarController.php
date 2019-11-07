@@ -39,6 +39,23 @@ use Fisharebest\Webtrees\Tree;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
+use function array_unique;
+use function assert;
+use function count;
+use function e;
+use function explode;
+use function get_class;
+use function ob_get_clean;
+use function ob_start;
+use function preg_match;
+use function range;
+use function redirect;
+use function response;
+use function route;
+use function str_replace;
+use function strlen;
+use function substr;
+
 /**
  * Show anniveraries for events in a given day/month/year.
  */
@@ -160,6 +177,31 @@ class CalendarController extends AbstractBaseController
             'view'          => $view,
             'year'          => $year,
         ]);
+    }
+
+    /**
+     * @param ServerRequestInterface $request
+     *
+     * @return ResponseInterface
+     */
+    public function select(ServerRequestInterface $request): ResponseInterface
+    {
+        $tree = $request->getAttribute('tree');
+        assert($tree instanceof Tree);
+
+        $view = $request->getAttribute('view');
+
+        return redirect(route('calendar', [
+            'cal'      => $request->getParsedBody()['cal'],
+            'day'      => $request->getParsedBody()['day'],
+            'filterev' => $request->getParsedBody()['filterev'],
+            'filterof' => $request->getParsedBody()['filterof'],
+            'filtersx' => $request->getParsedBody()['filtersx'],
+            'month'    => $request->getParsedBody()['month'],
+            'tree'     => $tree->name(),
+            'view'     => $view,
+            'year'     => $request->getParsedBody()['year'],
+        ]));
     }
 
     /**
@@ -472,7 +514,7 @@ class CalendarController extends AbstractBaseController
     private function applyFilter(array $facts, string $filterof, string $filtersx): array
     {
         $filtered      = [];
-        $hundred_years = Carbon::now()->subYears(100)->julianDay();
+        $hundred_years_ago = Carbon::now()->subYears(100)->julianDay();
         foreach ($facts as $fact) {
             $record = $fact->record();
             if ($filtersx) {
@@ -499,7 +541,7 @@ class CalendarController extends AbstractBaseController
                 }
             }
             // Filter on recent events
-            if ($filterof === 'recent' && $fact->date()->maximumJulianDay() < $hundred_years) {
+            if ($filterof === 'recent' && $fact->date()->maximumJulianDay() < $hundred_years_ago) {
                 continue;
             }
             $filtered[] = $fact;

@@ -19,18 +19,34 @@ declare(strict_types=1);
 
 namespace Fisharebest\Webtrees\Http\RequestHandlers;
 
-use Fisharebest\Webtrees\Http\ViewResponseTrait;
+use Fisharebest\Webtrees\Contracts\UserInterface;
+use Fisharebest\Webtrees\FlashMessages;
 use Fisharebest\Webtrees\I18N;
+use Fisharebest\Webtrees\Log;
+use Fisharebest\Webtrees\Services\UserService;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
+use function e;
+use function redirect;
+use function route;
+
 /**
- * Show the privacy policy page.
+ * Delete old/inactive users.
  */
-class PrivacyPolicy implements RequestHandlerInterface
+class UsersCleanupAction implements RequestHandlerInterface
 {
-    use ViewResponseTrait;
+    /** @var UserService */
+    private $user_service;
+
+    /**
+     * @param UserService $user_service
+     */
+    public function __construct(UserService $user_service)
+    {
+        $this->user_service = $user_service;
+    }
 
     /**
      * @param ServerRequestInterface $request
@@ -39,15 +55,21 @@ class PrivacyPolicy implements RequestHandlerInterface
      */
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        $tree  = $request->getAttribute('tree');
-        $title = I18N::translate('Privacy policy');
+        $delete = $request->getParsedBody()['delete'] ?? [];
 
-        $uses_analytics = true;
+        foreach ($delete as $user_id) {
+            $user = $this->user_service->find($user_id);
+            if ($user instanceof UserInterface) {
+                $this->user_service->delete($user);
 
-        return $this->viewResponse('privacy-policy', [
-            'title'          => $title,
-            'tree'           => $tree,
-            'uses_analytics' => $uses_analytics,
-        ]);
+                Log::addAuthenticationLog('Deleted user: ' . $user->userName());
+
+                FlashMessages::addMessage(I18N::translate('The user %s has been deleted.', e($user->userName())), 'success');
+            }
+        }
+
+        $url = route(UsersCleanupPage::class);
+
+        return redirect($url);
     }
 }

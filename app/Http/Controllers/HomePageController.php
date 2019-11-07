@@ -38,7 +38,6 @@ use Fisharebest\Webtrees\Module\UserMessagesModule;
 use Fisharebest\Webtrees\Module\UserWelcomeModule;
 use Fisharebest\Webtrees\Module\WelcomeBlockModule;
 use Fisharebest\Webtrees\Services\ModuleService;
-use Fisharebest\Webtrees\Services\UserService;
 use Fisharebest\Webtrees\Tree;
 use Illuminate\Database\Capsule\Manager as DB;
 use Illuminate\Database\Query\Builder;
@@ -50,6 +49,12 @@ use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 use function assert;
+use function e;
+use function is_numeric;
+use function redirect;
+use function response;
+use function route;
+use function view;
 
 /**
  * Controller for the user/tree's home page.
@@ -89,26 +94,17 @@ class HomePageController extends AbstractBaseController
         ],
     ];
 
-    /**
-     * @var ModuleService
-     */
+    /** @var ModuleService */
     private $module_service;
-
-    /**
-     * @var UserService
-     */
-    private $user_service;
 
     /**
      * HomePageController constructor.
      *
      * @param ModuleService $module_service
-     * @param UserService   $user_service
      */
-    public function __construct(ModuleService $module_service, UserService $user_service)
+    public function __construct(ModuleService $module_service)
     {
         $this->module_service = $module_service;
-        $this->user_service   = $user_service;
     }
 
     /**
@@ -389,8 +385,8 @@ class HomePageController extends AbstractBaseController
      */
     public function treePageDefaultUpdate(ServerRequestInterface $request): ResponseInterface
     {
-        $main_blocks = $request->getParsedBody()[self::MAIN_BLOCKS] ?? [];
-        $side_blocks = $request->getParsedBody()[self::SIDE_BLOCKS] ?? [];
+        $main_blocks = new Collection($request->getParsedBody()[self::MAIN_BLOCKS] ?? []);
+        $side_blocks = new Collection($request->getParsedBody()[self::SIDE_BLOCKS] ?? []);
 
         $this->updateTreeBlocks(-1, $main_blocks, $side_blocks);
 
@@ -449,16 +445,14 @@ class HomePageController extends AbstractBaseController
             $main_blocks = $this->treeBlocks(-1, self::MAIN_BLOCKS)
                 ->map(static function (ModuleBlockInterface $block) {
                     return $block->name();
-                })
-                ->all();
+                });
             $side_blocks = $this->treeBlocks(-1, self::SIDE_BLOCKS)
                 ->map(static function (ModuleBlockInterface $block) {
                     return $block->name();
-                })
-                ->all();
+                });
         } else {
-            $main_blocks = $params[self::MAIN_BLOCKS] ?? [];
-            $side_blocks = $params[self::SIDE_BLOCKS] ?? [];
+            $main_blocks = new Collection($params[self::MAIN_BLOCKS] ?? []);
+            $side_blocks = new Collection($params[self::SIDE_BLOCKS] ?? []);
         }
 
         $this->updateTreeBlocks($tree->id(), $main_blocks, $side_blocks);
@@ -576,8 +570,8 @@ class HomePageController extends AbstractBaseController
      */
     public function userPageDefaultUpdate(ServerRequestInterface $request): ResponseInterface
     {
-        $main_blocks = $request->getParsedBody()[self::MAIN_BLOCKS] ?? [];
-        $side_blocks = $request->getParsedBody()[self::SIDE_BLOCKS] ?? [];
+        $main_blocks = new Collection($request->getParsedBody()[self::MAIN_BLOCKS] ?? []);
+        $side_blocks = new Collection($request->getParsedBody()[self::SIDE_BLOCKS] ?? []);
 
         $this->updateUserBlocks(-1, $main_blocks, $side_blocks);
 
@@ -636,16 +630,14 @@ class HomePageController extends AbstractBaseController
             $main_blocks = $this->userBlocks(-1, self::MAIN_BLOCKS)
                 ->map(static function (ModuleBlockInterface $block) {
                     return $block->name();
-                })
-                ->all();
+                });
             $side_blocks = $this->userBlocks(-1, self::SIDE_BLOCKS)
                 ->map(static function (ModuleBlockInterface $block) {
                     return $block->name();
-                })
-                ->all();
+                });
         } else {
-            $main_blocks = $params[self::MAIN_BLOCKS] ?? [];
-            $side_blocks = $params[self::SIDE_BLOCKS] ?? [];
+            $main_blocks = new Collection($params[self::MAIN_BLOCKS] ?? []);
+            $side_blocks = new Collection($params[self::SIDE_BLOCKS] ?? []);
         }
 
         $this->updateUserBlocks($user->id(), $main_blocks, $side_blocks);
@@ -809,13 +801,13 @@ class HomePageController extends AbstractBaseController
     /**
      * Save the updated blocks for a user.
      *
-     * @param int   $user_id
-     * @param array $main_blocks
-     * @param array $side_blocks
+     * @param int        $user_id
+     * @param Collection $main_block_ids
+     * @param Collection $side_block_ids
      *
      * @return void
      */
-    private function updateUserBlocks(int $user_id, array $main_blocks, array $side_blocks): void
+    private function updateUserBlocks(int $user_id, Collection $main_block_ids, Collection $side_block_ids): void
     {
         $existing_block_ids = DB::table('block')
             ->where('user_id', '=', $user_id)
@@ -823,7 +815,7 @@ class HomePageController extends AbstractBaseController
 
         // Deleted blocks
         foreach ($existing_block_ids as $existing_block_id) {
-            if (!in_array($existing_block_id, $main_blocks, false) && !in_array($existing_block_id, $side_blocks, false)) {
+            if (!$main_block_ids->contains($existing_block_id) && !$side_block_ids->contains($existing_block_id)) {
                 DB::table('block_setting')
                     ->where('block_id', '=', $existing_block_id)
                     ->delete();
@@ -835,8 +827,8 @@ class HomePageController extends AbstractBaseController
         }
 
         $updates = [
-            self::MAIN_BLOCKS => $main_blocks,
-            self::SIDE_BLOCKS => $side_blocks,
+            self::MAIN_BLOCKS => $main_block_ids,
+            self::SIDE_BLOCKS => $side_block_ids,
         ];
 
         foreach ($updates as $location => $updated_blocks) {
@@ -865,13 +857,13 @@ class HomePageController extends AbstractBaseController
     /**
      * Save the updated blocks for a tree.
      *
-     * @param int   $tree_id
-     * @param array $main_blocks
-     * @param array $side_blocks
+     * @param int        $tree_id
+     * @param Collection $main_block_ids
+     * @param Collection $side_block_ids
      *
      * @return void
      */
-    private function updateTreeBlocks(int $tree_id, array $main_blocks, array $side_blocks): void
+    private function updateTreeBlocks(int $tree_id, Collection $main_block_ids, Collection $side_block_ids): void
     {
         $existing_block_ids = DB::table('block')
             ->where('gedcom_id', '=', $tree_id)
@@ -879,7 +871,7 @@ class HomePageController extends AbstractBaseController
 
         // Deleted blocks
         foreach ($existing_block_ids as $existing_block_id) {
-            if (!in_array($existing_block_id, $main_blocks, false) && !in_array($existing_block_id, $side_blocks, false)) {
+            if (!$main_block_ids->contains($existing_block_id) && !$side_block_ids->contains($existing_block_id)) {
                 DB::table('block_setting')
                     ->where('block_id', '=', $existing_block_id)
                     ->delete();
@@ -891,8 +883,8 @@ class HomePageController extends AbstractBaseController
         }
 
         $updates = [
-            self::MAIN_BLOCKS => $main_blocks,
-            self::SIDE_BLOCKS => $side_blocks,
+            self::MAIN_BLOCKS => $main_block_ids,
+            self::SIDE_BLOCKS => $side_block_ids,
         ];
 
         foreach ($updates as $location => $updated_blocks) {

@@ -7,6 +7,8 @@ use Fisharebest\Webtrees\Http\RequestHandlers\CreateTreePage;
 use Fisharebest\Webtrees\Http\RequestHandlers\PendingChanges;
 use Fisharebest\Webtrees\Http\RequestHandlers\PhpInformation;
 use Fisharebest\Webtrees\Http\RequestHandlers\SiteLogsPage;
+use Fisharebest\Webtrees\Http\RequestHandlers\EmailPreferencesPage;
+use Fisharebest\Webtrees\Http\RequestHandlers\UsersCleanupPage;
 use Fisharebest\Webtrees\I18N;
 use Fisharebest\Webtrees\Module\FamilyListModule;
 use Fisharebest\Webtrees\Module\IndividualListModule;
@@ -53,7 +55,7 @@ use Illuminate\Support\Collection;
             <?= /* I18N: %s is a URL/link to the project website */
             I18N::translate('Support and documentation can be found at %s.', '<a href="https://webtrees.net/">webtrees.net</a>') ?>
         </p>
-        <p class="card-text ">
+        <p class="card-text">
             <?php if ($latest_version === '') : ?>
                 <?= I18N::translate('No upgrade information is available.') ?>
             <?php elseif (version_compare(Webtrees::VERSION, $latest_version) < 0) : ?>
@@ -78,7 +80,7 @@ use Illuminate\Support\Collection;
                     </li>
                     <li>
                         <span class="fa-li"><?= view('icons/email') ?></span>
-                        <a href="<?= e(route('admin-site-mail')) ?>">
+                        <a href="<?= e(route(EmailPreferencesPage::class)) ?>">
                             <?= I18N::translate('Sending email') ?>
                         </a>
                     </li>
@@ -342,7 +344,7 @@ use Illuminate\Support\Collection;
                     </li>
                     <li>
                         <span class="fa-li"><?= view('icons/delete') ?></span>
-                        <a href="<?= e(route('admin-users-cleanup')) ?>">
+                        <a href="<?= e(route(UsersCleanupPage::class)) ?>">
                             <?= I18N::translate('Delete inactive users') ?>
                         </a>
                     </li>

@@ -36,7 +36,7 @@ use Illuminate\Database\Capsule\Manager as DB;
 use Illuminate\Database\Query\Builder;
 use League\Flysystem\Filesystem;
 use League\Flysystem\FilesystemInterface;
-use League\Flysystem\Memory\MemoryAdapter;
+use League\Flysystem\Memory\NullAdapter;
 use Nyholm\Psr7\Factory\Psr17Factory;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ServerRequestFactoryInterface;
@@ -83,7 +83,6 @@ class TestCase extends \PHPUnit\Framework\TestCase
         // Disable the cache.
         app()->instance('cache.array', new Repository(new NullStore()));
 
-        app()->instance(FilesystemInterface::class, new Filesystem(new MemoryAdapter()));
         app()->bind(ModuleThemeInterface::class, WebtreesTheme::class);
 
         // Need the routing table, to generate URLs.
@@ -151,6 +150,7 @@ class TestCase extends \PHPUnit\Framework\TestCase
      * @param string[]                $query
      * @param string[]                $params
      * @param UploadedFileInterface[] $files
+     * @param string[]                $attributes
      *
      * @return ServerRequestInterface
      */
@@ -158,7 +158,8 @@ class TestCase extends \PHPUnit\Framework\TestCase
         string $method = RequestMethodInterface::METHOD_GET,
         array $query = [],
         array $params = [],
-        array $files = []
+        array $files = [],
+        array $attributes = []
     ): ServerRequestInterface {
         /** @var ServerRequestFactoryInterface */
         $server_request_factory = app(ServerRequestFactoryInterface::class);
@@ -173,7 +174,16 @@ class TestCase extends \PHPUnit\Framework\TestCase
             ->withUploadedFiles($files)
             ->withAttribute('base_url', 'https://webtrees.test')
             ->withAttribute('client-ip', '127.0.0.1')
-            ->withAttribute('locale', new LocaleEnUs());
+            ->withAttribute('locale', new LocaleEnUs())
+            ->withAttribute('user', new GuestUser());
+
+        foreach ($attributes as $key => $value) {
+            $request = $request->withAttribute($key, $value);
+
+            if ($key === 'tree') {
+                app()->instance(Tree::class, $value);
+            }
+        }
 
         app()->instance(ServerRequestInterface::class, $request);
 

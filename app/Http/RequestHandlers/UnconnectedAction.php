@@ -19,23 +19,33 @@ declare(strict_types=1);
 
 namespace Fisharebest\Webtrees\Http\RequestHandlers;
 
-use Fig\Http\Message\StatusCodeInterface;
-use Fisharebest\Webtrees\TestCase;
+use Fisharebest\Webtrees\Tree;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Server\RequestHandlerInterface;
+
+use function assert;
 
 /**
- * @covers \Fisharebest\Webtrees\Http\RequestHandlers\PrivacyPolicy
+ * Find groups of unrelated individuals.
  */
-class PrivacyPolicyTest extends TestCase
+class UnconnectedAction implements RequestHandlerInterface
 {
-    /**
-     * @return void
-     */
-    public function testHandler(): void
-    {
-        $request  = self::createRequest();
-        $handler  = new PrivacyPolicy();
-        $response = $handler->handle($request);
+    /** @var string */
+    protected $layout = 'layouts/administration';
 
-        self::assertSame(StatusCodeInterface::STATUS_OK, $response->getStatusCode());
+    /**
+     * @param ServerRequestInterface $request
+     *
+     * @return ResponseInterface
+     */
+    public function handle(ServerRequestInterface $request): ResponseInterface
+    {
+        $tree = $request->getAttribute('tree');
+        assert($tree instanceof Tree);
+
+        $associates = $request->getParsedBody()['associates'] ?? '';
+
+        return redirect(route(UnconnectedPage::class, ['tree' => $tree->name(), 'associates' => $associates]));
     }
 }
